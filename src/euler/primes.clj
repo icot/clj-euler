@@ -14,28 +14,29 @@
 
 (defn sieve [n] nil)
 
+; euler.core=> (time (euler.primes/factorize 20000000001235))
+; "Elapsed time: 409.103217 msecs"
+; (2595717067 67 23 5 1)
+
 (defn factorize
   "Returns a list of the integer factors of argument n"
   [n]
   (letfn [(factor-helper [remanent factor factors]
-            (do
-              (println remanent factor factors)
-              (let [
-                    next-remanent (quot remanent factor)
-                    stop? (<= remanent factor)
-                    branch? (zero? (mod remanent factor))
-                    next-factor (if (= factor 2) 3 (+ factor 2))
-                    ]
-                  (if stop?
-                    (cons factor factors)
-                    (if branch?
-                      (factor-helper next-remanent factor (cons factor factors))
-                      (factor-helper remanent next-factor factors)
-                      )
+            (let [
+                  next-remanent (quot remanent factor)
+                  stop? (<= (Math/round (Math/sqrt n)) factor)
+                  branch? (zero? (mod remanent factor))
+                  next-factor (if (= factor 2) 3 (+ factor 2))
+                  ]
+                (if stop?
+                  (if (= remanent 1) factors (cons remanent factors))
+                  (if branch?
+                    (recur next-remanent factor (cons factor factors))
+                    (recur remanent next-factor factors)
                     )
                   )
                 )
-            )
+              )
           ]
     (factor-helper n 2 '(1)))
   )
