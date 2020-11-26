@@ -1,12 +1,7 @@
 (ns euler.primes)
 
-(defn bar
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
-
 (defn divisors
-  "Return a list of integer divisors of argument n"
+  "Returns a list of integer divisors of argument n"
   [n]
   (letfn [(divisors-helper [acc n i max]
             (if (> i max) acc
@@ -19,36 +14,35 @@
 
 (defn sieve [n] nil)
 
-(defn factor
-  "Return a list of the integer factors of argument n"
+(defn factorize
+  "Returns a list of the integer factors of argument n"
   [n]
-  (letfn [(factor-helper [acc f rem]
+  (letfn [(factor-helper [remanent factor factors]
             (do
-              (println acc f rem)
+              (println remanent factor factors)
               (let [
-                    next (quot rem f)
-                    stop? (<= rem f)
-                    branch? (zero? (mod rem f))
-                    nf (if (= f 2) 3 (+ f 2))
+                    next-remanent (quot remanent factor)
+                    stop? (<= remanent factor)
+                    branch? (zero? (mod remanent factor))
+                    next-factor (if (= factor 2) 3 (+ factor 2))
                     ]
                   (if stop?
-                    (cons f acc)
+                    (cons factor factors)
                     (if branch?
-                      (factor-helper (cons f acc) f next)
-                      (factor-helper acc nf rem)
+                      (factor-helper next-remanent factor (cons factor factors))
+                      (factor-helper remanent next-factor factors)
                       )
                     )
                   )
                 )
             )
           ]
-    (factor-helper '(1) 2 n))
+    (factor-helper n 2 '(1)))
   )
 
 (defn phi [n] nil)
 
 (defn phi2 [n] nil)
-
 
 
 (defn prime? [n] false)
