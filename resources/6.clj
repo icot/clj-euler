@@ -1,0 +1,7 @@
+(def numbers (range 1 101))
+(def squares (map (fn [n] (* n n)) numbers))
+(def sum (reduce + numbers))
+(println numbers)
+(println squares)
+(println sum)
+(println (- (* sum sum) (reduce + squares) ))
