@@ -1,26 +1,12 @@
 (ns euler.core)
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
-
-(defn prime? [n] false)
-
-(defn factors [n] nil)
-
-
-(defn phi [n] nil)
-
-(defn phi2 [n] nil)
-
 (defn fib-seq
   "Laxy fibonacci sequence generator"
   ([]
      (fib-seq 0 1))
   ([a b]
      (lazy-seq
-      (cons b (fib-seq b (+ a b))))))
+      (cons b (fib-seq b (+' a b))))))
 
 (defn sum-digits [n] nil)
 
@@ -39,13 +25,22 @@
 (defn hexagonal? [n] nil)
 
 
-(defn num-divisors [n] nil)
-(defn divisors [n] nil)
-
-(defn palindrome [n] nil)
+(defn palindrome?
+  "Returns true if argument is a palindromic integer"
+  [n]
+  (let [ciphers (map identity (str n))
+        reverse-ciphers (reverse ciphers)]
+    (= ciphers reverse-ciphers))
+  )
 
 (defn reverse-chiffres [n] nil)
 
-(defn factorial [n] nil)
-
+(defn factorial "Returns factorial of argument n"
+  [n]
+  (reduce *' (range 1 (inc n)))
+  )
+  
 (defn concatenate-nums [a, b] nil)
+
+
+

@@ -41,9 +41,60 @@
     (factor-helper n 2 '(1)))
   )
 
+; https://stackoverflow.com/questions/960980/fast-prime-number-generation-in-clojure
+
+
+; Ported from https://web.archive.org/web/20150710134640/http://diditwith.net/2009/01/20/YAPESProblemSevenPart2.aspx
+(defn gen-primes "Generates an infinite, lazy sequence of prime numbers"
+  []
+  (letfn [(reinsert [table x prime]
+             (update-in table [(+ prime x)] conj prime))
+          (primes-step [table d]
+             (if-let [factors (get table d)]
+               (recur (reduce #(reinsert %1 d %2) (dissoc table d) factors)
+                      (inc d))
+               (lazy-seq (cons d (primes-step (assoc table (* d d) (list d))
+                                              (inc d))))))]
+    (primes-step {} 2)))
+
+;def eratosthenes(n):
+;    candidates = [item for item in range(3, n, 2)]
+;    L = len(candidates)
+;    for cpos, c in enumerate(candidates):
+;        if c:
+;            for pos in range(cpos+c, L, c):
+;                candidates[pos] = 0
+;    candidates.insert(0,2)
+;    return [item for item in candidates if item > 0]
+
+(defn sieve-eratosthenes
+  "Prime sieve for prime numbers sequence generation up to n"
+  ([n]
+    (let [candidates (range 3 n 2)
+          c (count candidates)]
+      (sieve-eratosthenes candidates 0 (dec c))
+      ))
+  ([candidates i c]
+   (do
+   (if (and (<= c i) (zero? (nth candidates i)))
+     (recur candidates (inc i) c)
+     (if (<= c i)
+        (cons 2 (filter (complement zero?) candidates))
+        (letfn [(candidate-filter [n]
+                  (cond
+                    (zero? (nth candidates i)) n
+                    (= n (nth candidates i)) n
+                    :else (if (zero? (mod n (nth candidates i))) 0 n))
+                  )]
+          (recur (map candidate-filter candidates) (inc i) c))
+        ))
+   ); do
+   )
+
+  )
+
 (defn phi [n] nil)
 
 (defn phi2 [n] nil)
-
 
 (defn prime? [n] false)
