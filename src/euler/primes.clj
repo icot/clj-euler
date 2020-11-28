@@ -6,8 +6,8 @@
   (letfn [(divisors-helper [acc n i max]
             (if (> i max) acc
                 (if (zero? (mod n i))
-                  (divisors-helper (cons i acc) n (inc i) max)
-                  (divisors-helper acc n (inc i) max))))]
+                  (recur (cons i acc) n (inc i) max)
+                  (recur acc n (inc i) max))))]
     (divisors-helper '() n 1 (Math/round (Math/floor (/ n 2))))))
 
 (defn num-divisors [n] (count (divisors n)))

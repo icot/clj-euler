@@ -10,8 +10,15 @@
 
 (defn sum-digits [n] nil)
 
+(defn triangle-gen
+  ([] (triangle-gen 1 0))
+  ([n m] (lazy-seq
+        (cons (+ n m) (triangle-gen (inc n) (+ n m))))))
 
-(defn triangle_gen [] nil)
+(defn find-first
+  "Find first element in collection coll satisfying filter f"
+  [f coll]
+  (first (drop-while (complement f) coll)))
 
 (defn rotate [n] nil)
 (defn rotations [n] nil)
@@ -32,8 +39,6 @@
         reverse-ciphers (reverse ciphers)]
     (= ciphers reverse-ciphers))
   )
-
-(defn reverse-chiffres [n] nil)
 
 (defn factorial "Returns factorial of argument n"
   [n]
