@@ -1,5 +1,8 @@
 (ns euler.core)
 
+(defn sum [l] "summatory" (reduce +' l))
+(defn prod[l] "reduce list by product" (reduce *' l))
+
 (defn fib-seq "Laxy fibonacci sequence generator"
   ([]
      (fib-seq 0 1))

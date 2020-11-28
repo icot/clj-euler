@@ -2,23 +2,56 @@
 
 (use 'euler.core)
 
-(defn divisors
-  "Returns a list of integer divisors of argument n"
+; https://clojureverse.org/t/eratosthenes-party-time-a-k-a-feedback-wanted-on-this-implementation-of-eratosthenes-sieve/3801/16
+(use 'clojure.set)
+
+(defn sieve [n]
+  (if (< n 2)
+    ()
+    (let [sqrt-n (Math/sqrt n)]
+      (loop [primes (set (range 3 (inc n) 2))
+             p 3]
+        (if-not (< p sqrt-n)
+          (concat '(2) (sort primes))
+          (recur (difference primes (set (range (* p p) n (+ p p)))) (+ p 2)))))))
+
+(defn sieve [^long n]
+  (let [primes (boolean-array (inc n) true)
+        sqrt-n (int (Math/ceil (Math/sqrt n)))]
+    (if (< n 2)
+      '()
+      (loop [p 3]
+        (if (< sqrt-n p)
+          (concat '(2)
+                  (filter #(aget primes %)
+                          (range 3 (inc n) 2)))
+          (do
+            (when (aget primes p)
+              (loop [i (* p p)]
+                (if (<= i n)
+                  (do
+                    (aset primes i false)
+                    (recur (+ i p p))))))
+            (recur  (+ p 2))))))))
+
+(defn proper-divisors
+  "Returns a list of the proper (< n) integer divisors of n"
   [n]
   (letfn [(divisors-helper [acc n i max]
             (if (> i max) acc
                 (if (zero? (mod n i))
                   (recur (cons i acc) n (inc i) max)
                   (recur acc n (inc i) max))))]
-    (divisors-helper '() n 1 (Math/round (Math/floor (/ n 2))))))
+      (divisors-helper '() n 1 (Math/round (Math/floor (/ n 2))))))
 
+(defn divisors
+  "Returns a list of all integer divisors of n"
+  [n]
+  (cons n (proper-divisors n)))
 
-(defn sieve [n] nil)
-
-; euler.core=> (time (euler.primes/factorize 20000000001235))
-; "Elapsed time: 409.103217 msecs"
-; (2595717067 67 23 5 1)
-
+; euler.core=> (time (factorize-naive 112346781234901234))
+; "Elapsed time: 28638.889987 msecs"
+; (8024770088207231 7 2 1)
 (defn factorize-naive
   "Returns a list of the integer factors of argument n"
   [n]
@@ -43,19 +76,24 @@
     (factor-helper n 2 '(1)))
   )
 
+; euler.core=> (time (factorize-sieve 112346781234901234))
+; "Elapsed time: 12245.08063 msecs"
+; (8024770088207231 7 2 1)
+;
 (defn factorize-sieve
   "Returns a list of the integer factors of argument n"
   [n]
   (let [stop-value (Math/round (Math/sqrt n))
         primes (sieve stop-value)
         factor-helper (fn [remanent factor factors primes]
+                        (do
+                  ;;      (println remanent factor factors)
             (let [
                   next-remanent (quot remanent factor)
-                  stop? (< (Math/round (Math/sqrt n)) factor)
                   branch? (zero? (mod remanent factor))
                   [next-factor & remaining-primes] primes
                   ]
-                (if stop?
+                (if (or (empty? primes) (= remanent 1))
                   (if (= remanent 1) factors (cons remanent factors))
                   (if branch?
                     (recur next-remanent factor (cons factor factors) primes)
@@ -64,6 +102,7 @@
                   )
                 )
               )
+                          )
           ]
     (factor-helper n 2 '(1) primes))
   )
@@ -71,7 +110,7 @@
 ; Theorem 273: An Introduction to the Theory un Numbers (G.H Hardy and E.M Wright)
 (defn num-divisors "Returns number of divisors for n"
   [n]
-  (let [f (factorize n)]
+  (let [f (factorize-sieve n)]
     (if (= 2 (count f))
       2
       (/ (reduce * (map inc (vals (count-hash f)))) 2))))
@@ -128,37 +167,6 @@
 
   )
 
-; https://clojureverse.org/t/eratosthenes-party-time-a-k-a-feedback-wanted-on-this-implementation-of-eratosthenes-sieve/3801/16
-(use 'clojure.set)
-
-(defn sieve [n]
-  (if (< n 2)
-    ()
-    (let [sqrt-n (Math/sqrt n)]
-      (loop [primes (set (range 3 (inc n) 2))
-             p 3]
-        (if-not (< p sqrt-n)
-          (concat '(2) (sort primes))
-          (recur (difference primes (set (range (* p p) n (+ p p)))) (+ p 2)))))))
-
-(defn sieve [^long n]
-  (let [primes (boolean-array (inc n) true)
-        sqrt-n (int (Math/ceil (Math/sqrt n)))]
-    (if (< n 2)
-      '()
-      (loop [p 3]
-        (if (< sqrt-n p)
-          (concat '(2)
-                  (filter #(aget primes %)
-                          (range 3 (inc n) 2)))
-          (do
-            (when (aget primes p)
-              (loop [i (* p p)]
-                (if (<= i n)
-                  (do
-                    (aset primes i false)
-                    (recur (+ i p p))))))
-            (recur  (+ p 2))))))))
 
 (defn phi [n] nil)
 
