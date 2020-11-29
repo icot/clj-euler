@@ -7,5 +7,6 @@
                  [org.clojure/clojure "1.10.1"]
                  [org.clojure/tools.trace "0.7.10"]
                  [org.clojure/math.numeric-tower "0.0.4"]
+                 [org.clojure/math.combinatorics "0.1.6"]
                  ]
   :repl-options {:init-ns euler.core})
