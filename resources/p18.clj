@@ -5,8 +5,8 @@
 (load-file "../src/euler/core.clj")
 (load-file "../src/euler/primes.clj")
 
-(def filename "./18.input")
-;(def filename "./p067_triangle.txt")
+;(def filename "./18.input")
+(def filename "./p067_triangle.txt")
 
 (def data (map #(str/split % #" ") (str/split (slurp filename) #"\n")))
 
@@ -27,21 +27,20 @@
    )
   )
 
-(println int-data)
-
 (defn main-loop [zig]
   (let [
         reduced-last (reduce-max-row (last zig))
         trimmed-zig (butlast zig)
         new-last (map + (last trimmed-zig) reduced-last)
-        new-zig (reverse (cons new-last (reverse trimmed-zig)))
+        new-zig (reverse (cons new-last (reverse (butlast trimmed-zig))))
         ]
     (do
-      (println "reduced-last" reduced-last)
-      (println "trimmed-zig" trimmed-zig)
-      (println "new-last" new-last)
-      (println "new-zig" new-zig)
-      (read-line)
+;      (newline)
+;      (println "reduced-last" reduced-last)
+;      (println "trimmed-zig" trimmed-zig)
+;      (println "new-last" new-last)
+;      (println "new-zig" new-zig)
+;      (read-line)
     (if (= (count zig) 1) zig
         (recur new-zig)
         )
@@ -49,4 +48,4 @@
       )
   )
 
-(println (main-loop int-data))
+(time (println (main-loop int-data)))
