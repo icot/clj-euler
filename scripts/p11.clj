@@ -1,7 +1,7 @@
 (ns p11
   (:require [clojure.string :as str]))
 
-(def filename "./p011_matrix.txt")
+(def filename "resources/p011_matrix.txt")
 
 (def N 20)
 
@@ -40,7 +40,36 @@
     )
   )
 
+(defn get-diag-down-top [h i]
+  (let [is (map + (map #(* 20 %) (range N)) (range i N))]
+    (do
+      (println is)
+      (map #(get h %) is)
+      )
+    )
+  )
+(defn get-diag-down-bottom [h i]
+  (let [is (map + (map #(* 20 %) (range N)) (range i N))]
+    (do
+      (println is)
+      (map #(get h %) is)
+      )
+    )
+  )
+
 (defn max-by-cols [h col acc]
+  (let [mc (process (get-col h col) 0)]
+    (if (= col 20)
+      acc
+      (if (> mc acc)
+        (recur h (inc col) mc)
+        (recur h (inc col) acc)
+        )
+      )
+    )
+  )
+
+(defn max-by-diag [h col acc]
   (let [mc (process (get-col h col) 0)]
     (if (= col 20)
       acc
@@ -54,3 +83,8 @@
 
 
 (time (println (max-by-cols mh 0 0)))
+
+(println (get-diag-down-top mh 0))
+(println (get-diag-down-top mh 16))
+(println (get-diag-down-bottom mh 1))
+(println (get-diag-down-bottom mh 16))
