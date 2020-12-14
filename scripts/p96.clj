@@ -37,11 +37,11 @@
 
 (def units (into (sorted-map) (for [s squares] (vector s (for [u unitlist :when (in? u s)] u)))))
 
-(def peers nil)
+(def peers (into (sorted-map) (for [s squares] (vector s (set (flatten (get units s)))))))
 
 ;; Validations
 (assert (= (count squares) 81))
 (assert (= (count unitlist) 27))
 
 ;; display method
-;;
+(println peers)
