@@ -8,5 +8,8 @@
                  [org.clojure/tools.trace "0.7.10"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/math.combinatorics "0.1.6"]
+                 [uncomplicate/neanderthal "0.38.0"]
+                 [criterium "0.4.6"] ; benchmarking
+                 [com.clojure-goes-fast/clj-async-profiler "0.4.1"] ; FlameGraphs
                  ]
   :repl-options {:init-ns euler.core})
