@@ -2,15 +2,15 @@
   (:require [clojure.string :as str])
   )
 
+;; Following Peter Norvig's sudoku solver
+;; http://norvig.com/sudoku.html
+
 ;; load input
 (def grids
   (partition 9 (filter #(not (str/includes? % "Grid"))
                        (str/split-lines (slurp "resources/p096_sudoku.txt")))))
 
-(println (first grids))
-
-;; Following Peter Norvig's sudoku solver
-;; http://norvig.com/sudoku.html
+(def f (flatten (map #(map identity %) (first grids))))
 
 (defn cross [as bs] (for [a as b bs] (str/join "" (vector a b))))
 
@@ -25,8 +25,6 @@
 (def rows '[\a \b \c \d \e \f \g \h \i])
 
 (def squares (cross rows cols))
-
-(println squares)
 
 (def unitlist (concat
                (for [c cols] (for [r rows] (str/join "" (vector r c)))) ; Columns
@@ -43,5 +41,17 @@
 (assert (= (count squares) 81))
 (assert (= (count unitlist) 27))
 
-;; display method
-(println peers)
+(defn grid-values [grid]
+  (do
+    (assert (= (count grid) 81))
+    (into (sorted-map) (map vector squares grid))
+    )
+  )
+
+(defn parse-grid [grid]
+  (let [buf (into (sorted-map) (map vector squares (repeat digits)))
+        values (grid-values grid)]
+    buf )
+  )
+
+(println (parse-grid f))
