@@ -40,6 +40,7 @@
 ;; Validations
 (assert (= (count squares) 81))
 (assert (= (count unitlist) 27))
+;;
 
 (defn grid-values [grid]
   (do
@@ -48,10 +49,69 @@
     )
   )
 
+(defn prune-peers
+  ([values s d] (prune-peers values s d (get peers s)))
+  ([values s d peers]
+   (if (empty? peers) values
+       (let [p (first peers)
+             new-vs (filter #(not= % d) (get values p))
+             new-values (assoc values p new-vs)]
+         (prune-peers new-values s d (rest peers))
+         )
+       )
+   )
+  )
+
+(defn assign-units [s d]
+  (for [u (get units s)]
+    (let [dplaces (for [su u] )]
+      (if (empty? dplaces)
+        false
+        (if (= (count dplaces) 1)
+        )
+      )
+    )
+  )
+
+(defn eliminate [values s d]
+  (let [vs (get values s)
+        new-vs (filter #(not= % d) vs)]
+    (cond
+      (= vs new-vs) values ; Value already removed. Nothing to do
+      (empty? new-vs) false ; Error condition
+      (= (count new-vs) 1) (let [new-values (assoc values s new-vs)]
+                             (prune-peers new-values s d))
+      :else (assign-units s d)
+      )
+    )
+  )
+
+(defn assign [values s d]
+  nil
+  )
+
 (defn parse-grid [grid]
   (let [buf (into (sorted-map) (map vector squares (repeat digits)))
         values (grid-values grid)]
     buf )
   )
 
-(println (parse-grid f))
+(defn display [values]
+  (let [
+        width (inc (apply max (for [s squares] (count (get values s)))))
+        line (str/join "+" (repeat 3 (str/join "" (repeat (* 3 width) "-"))))
+        ]
+    (for [r rows]
+      (let [vline (str/join " " (for [c cols]
+                                  (let [elements (str/join "" (get values (str/join "" (vector r c))))]
+                                    (if (or (= c \3) (= c \6))
+                                        (str/join "" (str elements " |"))
+                                        (str/join "" elements)))))]
+        (if (or (= r \c) (= r \f))
+          (do (println vline) (println line))
+          (println vline)
+          )
+        )
+      )
+    )
+  )
