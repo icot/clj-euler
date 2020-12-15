@@ -86,9 +86,19 @@
   )
 
 (defn prune
-  ([values] values )
-  ([values changed]
-   values
+  ([values]
+   (let [ss (keys (into {} (filter (fn [e] (= 1 (count (last e)))) (seq values))))]
+     (prune values ss ss)))
+  ([values sso ss]
+   (let [ssd (keys (into {} (filter (fn [e] (= 1 (count (last e)))) (seq values))))]
+     (if (empty? ss)
+       (if (= (count sso) (count ssd))
+         values
+         (prune values)
+         )
+       (recur (prune-peers values (first ss) (first (get values (first ss)))) sso (rest ss))
+       )
+    )
    )
   )
 
@@ -120,3 +130,5 @@
     )
   )
 
+
+;(def p (parse-grid f))
