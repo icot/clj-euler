@@ -114,21 +114,35 @@
   (let [
         width (inc (apply max (for [s squares] (count (get values s)))))
         line (str/join "+" (repeat 3 (str/join "" (repeat (* 3 width) "-"))))
-        ]
-    (for [r rows]
-      (let [vline (str/join " " (for [c cols]
-                                  (let [elements (str/join "" (get values (str/join "" (vector r c))))]
-                                    (if (or (= c \3) (= c \6))
-                                        (str/join "" (str elements " |"))
-                                        (str/join "" elements)))))]
-        (if (or (= r \c) (= r \f))
-          (do (println vline) (println line))
-          (println vline)
-          )
+        ls (flatten (for [r rows]
+                      (let [vline (str/join " "
+                                            (for [c cols]
+                                              (let [elements (str/join "" (get values (str/join "" (vector r c))))]
+                                                (if (or (= c \3) (= c \6))
+                                                  (str/join "" (str elements " |"))
+                                                  (str/join "" elements)))))]
+                        (if (or (= r \c) (= r \f))
+                          (vector vline line)
+                          vline))))]
+    (doseq [l ls] (println l))
+    )
+ )
+
+;; Main loop
+(loop [g grids c 1 acc 0]
+  (if (<= c 50)
+    (let [f (flatten (map #(map identity %) (first g)))
+          v (parse-grid f)
+          h (reduce + (map #(Character/digit (first %) 10) (vector (get v "a1") (get v "a2") (get v "a3"))))
+          ]
+      (do
+        (newline)
+        (println "Grid " c "acc: " acc)
+        (display (parse-grid f))
+        (newline)
+        (recur (rest g) (inc c) (+ acc h))
         )
       )
+    count
     )
   )
-
-
-;(def p (parse-grid f))
