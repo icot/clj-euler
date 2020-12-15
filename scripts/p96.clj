@@ -45,7 +45,8 @@
 (defn grid-values [grid]
   (do
     (assert (= (count grid) 81))
-    (into (sorted-map) (map vector squares grid))
+    (into (sorted-map)
+          (filter #(not= (last %) [\0]) (map vector squares (map vector grid))))
     )
   )
 
@@ -56,44 +57,47 @@
        (let [p (first peers)
              new-vs (filter #(not= % d) (get values p))
              new-values (assoc values p new-vs)]
-         (prune-peers new-values s d (rest peers))
+         (if (= p s)
+           (recur values s d (rest peers))
+           (recur new-values s d (rest peers))
+           )
          )
        )
    )
   )
 
-(defn assign-units [s d]
-  (for [u (get units s)]
-    (let [dplaces (for [su u] )]
-      (if (empty? dplaces)
-        false
-        (if (= (count dplaces) 1)
-        )
-      )
-    )
+; Same in spirit, but short circuits the return?
+(defn assign-by-unit
+  ([values s d] (assign-by-unit values s d (get units s)))
+  ([values s d units]
+   (for [u (get units s)]
+     (if (empty? units) values
+         (let [u (first units)
+               dplaces (for [su u :when (in? (get values su) d)] su)]
+           (if (empty? dplaces) false
+               (if (empty? (rest dplaces))
+                 (assoc values (first dplaces) (vector d))
+                 (assign-by-unit values s d (rest units)))
+            )
+           )
+         )
+     )
+   )
   )
 
-(defn eliminate [values s d]
-  (let [vs (get values s)
-        new-vs (filter #(not= % d) vs)]
-    (cond
-      (= vs new-vs) values ; Value already removed. Nothing to do
-      (empty? new-vs) false ; Error condition
-      (= (count new-vs) 1) (let [new-values (assoc values s new-vs)]
-                             (prune-peers new-values s d))
-      :else (assign-units s d)
-      )
-    )
-  )
-
-(defn assign [values s d]
-  nil
+(defn prune
+  ([values] values )
+  ([values changed]
+   values
+   )
   )
 
 (defn parse-grid [grid]
   (let [buf (into (sorted-map) (map vector squares (repeat digits)))
-        values (grid-values grid)]
-    buf )
+        start-grid (grid-values grid)
+        values (merge buf start-grid)]
+    (prune values)
+    )
   )
 
 (defn display [values]
@@ -115,3 +119,4 @@
       )
     )
   )
+
