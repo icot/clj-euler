@@ -142,47 +142,18 @@
     )
   )
 
-
-; BUG: apart from unit assignation not being implemented the issue is the DFS not
-; progressing beyond the first branch
-;
-(defn solve
-  ([values]
-   (if (solved? values) values
-       ; Choose alternative and recur
-       (let [
-             ss (for [s squares :when (> (count (get values s)) 1)] s)
-             ]
-         (solve values ss)
-         )
-       )
-   )
-  ([values ss]
-   (if (empty? ss) nil
-       (let [
-             s (first ss)
-             candidates (filter map? (for [d (get values s)] (assign values s d)))
-             options (filter map? (map #(solve % (rest ss)) candidates))
-             sol (filter solved? candidates)
-
-             ]
-         (do
-;           (println "ss" ss)
-;           (println "candidates" candidates)
-;           (println "valid?" (map valid? candidates))
-;           (println "valid candidates" (filter valid? candidates))
-;           (println "solved?" (map solved? candidates))
-;           (println "solved candidates" (filter solved? candidates))
-;           (println "sol" sol)
-           (if (>= (count sol) 1)
-             (first sol)
-             (solve values (rest ss))
-             )
-         )
-         )
-       )
-   )
-   )
+; Re-implementation in proper Clojure of Norvig's search method
+; https://github.com/neolee/sudoku-norvig/blob/master/sudoku.clj
+(defn search
+  "Using depth-first search and propagation, try all possible values"
+  [values]
+  (when values
+    (let [scount (comp count values)] ;digits remaining
+      (if (every? #(= 1 (scount %)) squares)
+        values ;solved!
+        (let [s (apply min-key scount (filter #(< 1 (scount %)) squares))]
+          (some identity (for [d (values s)]
+                           (search (assign values s d)))))))))
 
 ;; Display
 (defn display [values]
@@ -205,15 +176,19 @@
 ;; Main loop
 (loop [g grids c 1 acc 0]
   (if (<= c 50)
-    (let [f (flatten (map #(map identity %) (first g)))
+    (let [f (flatten (map #(map identity %) (nth grids (dec c))))
           v (parse-grid f)
-          h (reduce + (map #(Character/digit (first %) 10) (vector (get v "a1") (get v "a2") (get v "a3"))))
+          s (search v)
+          h (reduce +
+                    (map *
+                         '(100 10 1)
+                         (map #(Character/digit (first %) 10) (vector (get s "a1") (get s "a2") (get s "a3")))))
           ]
       (do
         (newline)
         (println "Grid " c "acc: " acc)
         ;(try (display (solve (parse-grid f))) (catch Exception e))
-        (display (solve (parse-grid f)))
+        (display s)
         (newline)
         (recur (rest g) (inc c) (+ acc h))
         )
@@ -221,3 +196,7 @@
     count
     )
   )
+
+
+; TODO: Execution time is too slow, most probably caused by bad clojure idioms
+; BUG: The final sudoku line is not added to the total correctly!
