@@ -44,7 +44,8 @@
 ;;
 
 (defn solved? [values]
-  (empty? (filter #(> (count (last %)) 1) (seq values))))
+  (= (count (filter #(= (count (last %)) 1) (seq values))) 81)
+  )
 
 (defn grid-values [grid]
   (do
@@ -54,25 +55,6 @@
     )
   )
 
-; Same in spirit, but short circuits the return?
-(defn assign-by-unit
-  ([values s d] (assign-by-unit values s d (get units s)))
-  ([values s d units]
-   ;(do
-   ;  (println s d units)
-     (if (empty? units)
-       values
-       (for [un units]
-         (let [dplaces (for [su un :when (in? (get values su) d)] su)]
-           (if (empty? (rest dplaces))
-             (assoc values (first dplaces) (vector d))
-             (assign-by-unit values s d (rest units)))
-           )
-         )
-       )
-     ;)
-   )
-  )
 
 (defn prune-peers
   ([values s d] (prune-peers values s d (get peers s)))
@@ -116,30 +98,91 @@
     )
   )
 
-(defn assign [values s v]
-  (let [
-        candidates (get values s)
-        new-values (if (in? candidates v) (assoc values s (list v)) false)
-        ]
-    (prune new-values)
-    )
+(defn assign-by-unit
+  ([values s d] (assign-by-unit values s d (get units s)))
+  ([values s d units]
+   ;(do
+   ;  (println s d units)
+     (if (empty? units)
+       values
+       (for [un units]
+         (let [dplaces (for [su un :when (in? (get values su) d)] su)]
+           (if (empty? (rest dplaces))
+             (assoc values (first dplaces) (vector d))
+             (assign-by-unit values s d (rest units)))
+           )
+         )
+       )
+     ;)
+   )
   )
 
+; TODO: The previous bug is fixed, but on some grids the search blocks. Still proper
+; units verification missing
 
-(defn solve [values]
-  (if (solved? values) values
-      ; Choose alternative and recur
-      (let [min  (apply min (for [s squares :when (> (count (get values s)) 1)] (count (get values s))))
-            ss (for [s squares :when (= (count (get values s)) min)] s)
-            s (first ss)
-            candidates (for [d (get values s)] (assign values s d))]
-        (do
-;          (println s (get values s))
-          (solve (first (filter map? candidates)))
-        )
+(defn valid? [values]
+  (let [
+        m (apply min (for [s squares] (count (get values s))))
+        ]
+    (if (and (>= m 1) true)
+      true
+      false
       )
     )
   )
+
+(defn assign [values s v]
+  (let [
+        candidates (get values s)
+        new-values (prune (if (in? candidates v) (assoc values s (list v)) false))
+        ]
+    (if (valid? new-values)
+      new-values
+      false)
+    )
+  )
+
+
+; BUG: apart from unit assignation not being implemented the issue is the DFS not
+; progressing beyond the first branch
+;
+(defn solve
+  ([values]
+   (if (solved? values) values
+       ; Choose alternative and recur
+       (let [
+             ss (for [s squares :when (> (count (get values s)) 1)] s)
+             ]
+         (solve values ss)
+         )
+       )
+   )
+  ([values ss]
+   (if (empty? ss) nil
+       (let [
+             s (first ss)
+             candidates (filter map? (for [d (get values s)] (assign values s d)))
+             options (filter map? (map #(solve % (rest ss)) candidates))
+             sol (filter solved? candidates)
+
+             ]
+         (do
+;           (println "ss" ss)
+;           (println "candidates" candidates)
+;           (println "valid?" (map valid? candidates))
+;           (println "valid candidates" (filter valid? candidates))
+;           (println "solved?" (map solved? candidates))
+;           (println "solved candidates" (filter solved? candidates))
+;           (println "sol" sol)
+           (if (>= (count sol) 1)
+             (first sol)
+             (solve values (rest ss))
+             )
+         )
+         )
+       )
+   )
+   )
 
 ;; Display
 (defn display [values]
@@ -161,7 +204,7 @@
   )
 ;; Main loop
 (loop [g grids c 1 acc 0]
-  (if (<= c 2)
+  (if (<= c 50)
     (let [f (flatten (map #(map identity %) (first g)))
           v (parse-grid f)
           h (reduce + (map #(Character/digit (first %) 10) (vector (get v "a1") (get v "a2") (get v "a3"))))
@@ -169,7 +212,8 @@
       (do
         (newline)
         (println "Grid " c "acc: " acc)
-        (display (parse-grid f))
+        ;(try (display (solve (parse-grid f))) (catch Exception e))
+        (display (solve (parse-grid f)))
         (newline)
         (recur (rest g) (inc c) (+ acc h))
         )
