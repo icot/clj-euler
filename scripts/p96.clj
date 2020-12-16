@@ -10,7 +10,8 @@
   (partition 9 (filter #(not (str/includes? % "Grid"))
                        (str/split-lines (slurp "resources/p096_sudoku.txt")))))
 
-(def f (flatten (map #(map identity %) (first grids))))
+(def f (flatten (map #(map identity %) (first (rest grids)))))
+(def f0 (flatten (map #(map identity %) (first grids))))
 
 (defn cross [as bs] (for [a as b bs] (str/join "" (vector a b))))
 
@@ -42,12 +43,35 @@
 (assert (= (count unitlist) 27))
 ;;
 
+(defn solved? [values]
+  (empty? (filter #(> (count (last %)) 1) (seq values))))
+
 (defn grid-values [grid]
   (do
     (assert (= (count grid) 81))
     (into (sorted-map)
           (filter #(not= (last %) [\0]) (map vector squares (map vector grid))))
     )
+  )
+
+; Same in spirit, but short circuits the return?
+(defn assign-by-unit
+  ([values s d] (assign-by-unit values s d (get units s)))
+  ([values s d units]
+   ;(do
+   ;  (println s d units)
+     (if (empty? units)
+       values
+       (for [un units]
+         (let [dplaces (for [su un :when (in? (get values su) d)] su)]
+           (if (empty? (rest dplaces))
+             (assoc values (first dplaces) (vector d))
+             (assign-by-unit values s d (rest units)))
+           )
+         )
+       )
+     ;)
+   )
   )
 
 (defn prune-peers
@@ -66,24 +90,6 @@
    )
   )
 
-; Same in spirit, but short circuits the return?
-(defn assign-by-unit
-  ([values s d] (assign-by-unit values s d (get units s)))
-  ([values s d units]
-   (for [u (get units s)]
-     (if (empty? units) values
-         (let [u (first units)
-               dplaces (for [su u :when (in? (get values su) d)] su)]
-           (if (empty? dplaces) false
-               (if (empty? (rest dplaces))
-                 (assoc values (first dplaces) (vector d))
-                 (assign-by-unit values s d (rest units)))
-            )
-           )
-         )
-     )
-   )
-  )
 
 (defn prune
   ([values]
@@ -110,6 +116,32 @@
     )
   )
 
+(defn assign [values s v]
+  (let [
+        candidates (get values s)
+        new-values (if (in? candidates v) (assoc values s (list v)) false)
+        ]
+    (prune new-values)
+    )
+  )
+
+
+(defn solve [values]
+  (if (solved? values) values
+      ; Choose alternative and recur
+      (let [min  (apply min (for [s squares :when (> (count (get values s)) 1)] (count (get values s))))
+            ss (for [s squares :when (= (count (get values s)) min)] s)
+            s (first ss)
+            candidates (for [d (get values s)] (assign values s d))]
+        (do
+;          (println s (get values s))
+          (solve (first (filter map? candidates)))
+        )
+      )
+    )
+  )
+
+;; Display
 (defn display [values]
   (let [
         width (inc (apply max (for [s squares] (count (get values s)))))
@@ -126,11 +158,10 @@
                           vline))))]
     (doseq [l ls] (println l))
     )
- )
-
+  )
 ;; Main loop
 (loop [g grids c 1 acc 0]
-  (if (<= c 50)
+  (if (<= c 2)
     (let [f (flatten (map #(map identity %) (first g)))
           v (parse-grid f)
           h (reduce + (map #(Character/digit (first %) 10) (vector (get v "a1") (get v "a2") (get v "a3"))))
