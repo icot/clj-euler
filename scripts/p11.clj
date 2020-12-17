@@ -10,7 +10,10 @@
 (def int-data (into [] (doall (map #(map (fn [s] (Integer/parseInt s)) %) (doall data)))))
 (def flat-data (flatten int-data))
 
-(def mh (into (sorted-map) (map vector (range (count flat-data)) flat-data)))
+(def matrix (partition 20 flat-data))
+
+
+(def mh (into (sorted-map) (zipmap (range (count flat-data)) flat-data)))
 
 (defn process [l acc]
   (do
@@ -28,63 +31,60 @@
     )
   )
 
-(def max-by-rows (process (flatten int-data) 0))
-(time (println max-by-rows))
-
 (defn get-col [h i]
-  (let [is (range i (count h) N)]
+  (let [idxs (range i (count h) N)]
     (do
 ;      (println is)
-      (map #(get h %) is)
+      (map #(get h %) idxs)
       )
     )
   )
 
-(defn get-diag-down-top [h i]
-  (let [is (map + (map #(* 20 %) (range N)) (range i N))]
+(defn get-row [h i]
+  (let [start-pos (* N i)
+        stop-pos (+ start-pos N)
+        idxs (range start-pos stop-pos)]
     (do
-      (println is)
-      (map #(get h %) is)
-      )
-    )
-  )
-(defn get-diag-down-bottom [h i]
-  (let [is (map + (map #(* 20 %) (range N)) (range i N))]
-    (do
-      (println is)
-      (map #(get h %) is)
+;      (println is)
+      (map #(get h %) idxs)
       )
     )
   )
 
-(defn max-by-cols [h col acc]
-  (let [mc (process (get-col h col) 0)]
-    (if (= col 20)
-      acc
-      (if (> mc acc)
-        (recur h (inc col) mc)
-        (recur h (inc col) acc)
-        )
-      )
+(defn diag-right [m i j N]
+  (cond
+    (and (zero? i) (zero? j)) (let [idxs (map + (range 0 (* N N) N) (range N))]
+              (map nth (repeat m) idxs))
+    (= j 0) (let [idxs (map + (range (* N i) (* N N) N) (range N))]
+              (map nth (repeat m) idxs))
+    (= i 0) (let [idxs (filter #(< % (- (* N N) (* N j))) (map + (range j (* N N) N) (range N)))]
+              (map nth (repeat m) idxs))
     )
   )
 
-(defn max-by-diag [h col acc]
-  (let [mc (process (get-col h col) 0)]
-    (if (= col 20)
-      acc
-      (if (> mc acc)
-        (recur h (inc col) mc)
-        (recur h (inc col) acc)
-        )
-      )
+; BUG:  off-by-one last branch missing last diagonal (1 element) and second branch missing first element
+(defn diag-left [m i j N]
+  (cond
+    (and (= (dec N) i) (= (dec N) j)) (let [idxs (map - (range (dec N) (* N N) N) (range N))]
+              (map nth (repeat m) idxs))
+    (= j (dec N)) (let [idxs (map (comp dec -) (range (- N i) (- (* N N) (* N i)) N) (range N))]
+              (map nth (repeat m) idxs))
+              ;idxs)
+    (= i (dec N)) (let [idxs (map - (range (dec (* N (inc j))) (* N N) N) (range N))]
+              (map nth (repeat m) idxs))
     )
   )
 
+(def items (filter #(> (count %) 4)
+                   (concat
+                    (for [k (range 20)] (diag-right flat-data k 0 N))
+                    (for [k (range 20)] (diag-right flat-data 0 k N))
+                    (partition N flat-data)
+                    (for [k (range 20)] (get-col mh k))
+                    )
+            )
+  )
 
-(time (println (max-by-cols mh 0 0)))
-
-(println (get-diag-down-top mh 0))
-(println (get-diag-down-top mh 16))
-(println (get-diag-down-bottom mh 1))
-(println (get-diag-down-bottom mh 16))
+; BUG: Need revision. Result incorrect
+(println (count items))
+(println (reduce max (map (fn [item] (process item 0)) items)))
