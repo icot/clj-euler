@@ -28,8 +28,6 @@
          )
    )))
 
-(defn sum-digits [n] nil)
-
 (defn triangle-gen
   ([] (triangle-gen 1 0))
   ([n m] (lazy-seq
@@ -89,3 +87,23 @@
 (defn  hexagonal? [n]
   (let [p (/ (+ (Math/sqrt (+ (* n 8) 1)) 1) 4)]
     (zero? (- p (int p)))))
+
+(defn digits
+  ([n] (digits n '[]))
+  ([n acc]
+   (let [rem (mod n 10)
+         next (quot (- n rem) 10)]
+     (if (< n 10)
+       (cons n acc)
+       (recur next (cons rem acc))
+       )
+     )
+   )
+  )
+
+(defn pandigital? [n]
+  (let [d (set (range 1 10))
+        dn (set (digits n))]
+    (= d dn)
+    )
+  )

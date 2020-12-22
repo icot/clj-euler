@@ -172,4 +172,4 @@
 
 (defn phi2 [n] nil)
 
-(defn prime? [n] false)
+(defn prime? [n] (= (count (divisors n)) 2))
