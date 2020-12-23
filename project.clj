@@ -10,6 +10,12 @@
                  [org.clojure/math.combinatorics "0.1.6"]
                  [uncomplicate/neanderthal "0.38.0"]
                  [criterium "0.4.6"] ; benchmarking
-                 [com.clojure-goes-fast/clj-async-profiler "0.4.1"] ; FlameGraphs
+                 [org.clojure/core.async "1.3.610"]
+                 [com.clojure-goes-fast/clj-async-profiler "0.5.0"] ; FlameGraphs
                  ]
-  :repl-options {:init-ns euler.core})
+  :repl-options {:init-ns euler.core}
+  ; Options required to use clj-async-profiler
+  :jvm-opts ["-Djdk.attach.allowAttachSelf"
+             "-XX:+UnlockDiagnosticVMOptions"
+             "-XX:+DebugNonSafepoints"
+             ])

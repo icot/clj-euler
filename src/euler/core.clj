@@ -38,14 +38,6 @@
   [f coll]
   (first (drop-while (complement f) coll)))
 
-(defn rotate [n] nil)
-(defn truncate_left [n] nil)
-(defn truncate_right [n] nil)
-(defn triangular? [n] nil)
-(defn pentagonal? [n] nil)
-(defn hexagonal? [n] nil)
-
-
 (defn palindrome?
   "Returns true if argument is a palindromic integer"
   [n]
@@ -69,8 +61,6 @@
      (fn [[x & xs]] (map #(cons x %) (permutations xs)))
      (rotations a-set))))
 
-;(defn concatenate-nums [a, b] nil)
-;(defn rotate [n] nil)
 ;(defn truncate_left [n] nil)
 ;(defn truncate_right [n] nil)
 ;
@@ -107,3 +97,10 @@
     (= d dn)
     )
   )
+
+(defn rotations [n]
+  (let [d (digits n)
+        rs (partition (count d) 1 (take (dec (* 2 (count d))) (cycle d)))
+        ps (reverse (map #(int (Math/pow 10 %)) (range (count d))))]
+    (for [r rs]
+      (reduce + (map * r ps)))))
