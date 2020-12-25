@@ -9,7 +9,7 @@
 (defn rotations [a-seq]
   (map concat (tails a-seq) (heads a-seq)))
 
-(defn fib-seq "Laxy fibonacci sequence generator"
+(defn fib-seq "Lazy fibonacci sequence generator"
   ([]
      (fib-seq 0 1))
   ([a b]
@@ -104,3 +104,15 @@
         ps (reverse (map #(int (Math/pow 10 %)) (range (count d))))]
     (for [r rs]
       (reduce + (map * r ps)))))
+
+(defn truncations-left-to-right [n]
+  (let [ls (tails (digits n))]
+    (for [l ls]
+      (let [ps (reverse (map #(int (Math/pow 10 %)) (range (count l))))]
+        (reduce + (map * l ps))))))
+
+(defn truncations-right-to-left [n]
+  (let [ls (rest (heads (digits n)))]
+    (for [l ls]
+      (let [ps (reverse (map #(int (Math/pow 10 %)) (range (count l))))]
+        (reduce + (map * l ps))))))
