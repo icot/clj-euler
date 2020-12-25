@@ -52,18 +52,6 @@
   )
   
 
-; https://codereview.stackexchange.com/questions/135737/generate-all-permutations-in-clojure
-; Slowish, and not lexicographic order
-(defn permutations [a-set]
-  (if (empty? a-set)
-    (list ())
-    (mapcat
-     (fn [[x & xs]] (map #(cons x %) (permutations xs)))
-     (rotations a-set))))
-
-;(defn truncate_left [n] nil)
-;(defn truncate_right [n] nil)
-;
 ; https://en.wikipedia.org/wiki/Pentagonal_number#Tests_for_pentagonal_numbers
 (defn pentagonal? [n]
   (let [p (/ (+ (Math/sqrt (+ (* n 24) 1)) 1) 6)]
@@ -91,12 +79,26 @@
    )
   )
 
+(defn seq-to-digits [s]
+  (let [ps (reverse (map #(int (Math/pow 10 %)) (range (count s))))]
+    (reduce + (map * s ps))
+  ))
+
 (defn pandigital? [n]
   (let [d (set (range 1 10))
         dn (set (digits n))]
     (= d dn)
     )
   )
+
+(defn n-pandigital?
+  ([n] (n-pandigital? n (count (digits n))))
+  ([d n]
+   (let [ds (set (range 1 (inc n)))
+         dns (set (digits d))]
+     (and
+      (= ds dns)
+      (= (count (digits d)) n)))))
 
 (defn rotations [n]
   (let [d (digits n)
