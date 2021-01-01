@@ -7,11 +7,8 @@
 (def data (map #(Integer/parseInt %) (str/split (slurp "scripts/resources/p059_cipher.txt") #",")))
 
 (defn vchar-ratio [cs]
-  (let [C (count cs)
-        c (count (filter #(and (>= % 32) (<= % 126)) cs))]
-    (if (zero? C)
-      0
-      (/ c C))))
+  (let [c (count (filter #(and (>= % 32) (<= % 126)) cs))]
+      (/ c 1455)))
 
 (defn count-spaces [cs]
   (count (filter #(= % 32) cs)))
@@ -35,26 +32,25 @@
 
 (newline)
 
-(def c1 (doall (take-nth 3 data)))
-(def c2 (doall (take-nth 3 (rest data))))
-(def c3 (doall (take-nth 3 (rest (rest data)))))
-
-(def valid-ascii (concat (range 97 123)))
-(def ks (combo/combinations valid-ascii 3))
+(def valid-characters (concat (range 97 123)))
+(def ks (for [a valid-characters b valid-characters c valid-characters] (list a b c))) ; Misses repetitions
 
 (prn "Key space" (count ks))
 
+(time
 (loop [mykeys ks]
   (let [k (first mykeys)
         cleartext (apply-key data k)
         cs (count-spaces cleartext)
-        vr (vchar-ratio cleartext)]
+        vr (vchar-ratio cleartext)
+        stop-cond? (.contains (display cleartext) " the ")]
     (if (nil? k)
-      true
-      (if (>= cs 60)
-        (do
-          (prn "k" (display k) (display (take 50 cleartext)))
-          (recur (rest mykeys)))
-        (recur (rest mykeys))))))
-
-(prn "Done")
+      (prn "Done")
+      (do
+        (prn "k" (display k) (vchar-ratio cleartext) stop-cond? (display (take 30 cleartext)))
+        (if stop-cond?
+          (do
+            (prn (display cleartext))
+            (prn "Solution" (reduce + cleartext)))
+          (recur (rest mykeys)))))))
+)
