@@ -82,10 +82,9 @@
 ;
 (defn factorize-sieve
   "Returns a list of the integer factors of argument n"
-  [n]
-  (let [stop-value (Math/round (Math/sqrt n))
-        primes (sieve stop-value)
-        factor-helper (fn [remanent factor factors primes]
+  ([n] (factorize-sieve n (sieve (Math/round (Math/sqrt n)))))
+  ([n primes]
+   (let [factor-helper (fn [remanent factor factors primes]
                         (do
                   ;;      (println remanent factor factors)
             (let [
@@ -103,9 +102,8 @@
                 )
               )
                           )
-          ]
-    (factor-helper n 2 '(1) primes))
-  )
+         ]
+     (factor-helper n 2 '(1) primes))))
 
 ; Theorem 273: An Introduction to the Theory un Numbers (G.H Hardy and E.M Wright)
 (defn num-divisors "Returns number of divisors for n"
@@ -167,9 +165,18 @@
 
   )
 
+(defn gcd [a b]
+  (if (> a b)
+    (if (zero? b)
+      a
+      (recur b (mod a b)))
+    (recur b a)))
 
-(defn phi [n] nil)
-
-(defn phi2 [n] nil)
+(defn phi
+  ([n] (reduce + (for [k (range n) :when (= (gcd n k) 1)] 1)))
+  ([n primes]
+   (let [dfs (into (sorted-set) (filter #(> % 1)) (ep/factorize-sieve n primes))
+         ]
+     (*' n (reduce *' (map #(- 1 (/ 1 %)) (seq dfs)))))))
 
 (defn prime? [n] (= (count (divisors n)) 2))
