@@ -50,7 +50,12 @@
   [n]
   (reduce *' (range 1 (inc n)))
   )
-  
+
+(defn combinations [n k]
+  (let [num ((memoize factorial) n)
+        d1 ((memoize factorial) k)
+        d2 ((memoize factorial) (- n k))]
+    (quot num (*' d1 d2))))
 
 ; https://en.wikipedia.org/wiki/Pentagonal_number#Tests_for_pentagonal_numbers
 (defn pentagonal? [n]
@@ -79,9 +84,15 @@
    )
   )
 
+(defn ->number [s]
+  (let [ps (reverse (map #(bigdec (Math/pow 10 %)) (range (count s))))]
+    (reduce +' (map *' s ps))
+  ))
+
+; Deprecated, doesn't work for big numbers
 (defn seq-to-digits [s]
   (let [ps (reverse (map #(int (Math/pow 10 %)) (range (count s))))]
-    (reduce + (map * s ps))
+    (reduce +' (map * s ps))
   ))
 
 (defn pandigital? [n]
