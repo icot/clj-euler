@@ -175,8 +175,7 @@
 (defn phi
   ([n] (reduce + (for [k (range n) :when (= (gcd n k) 1)] 1)))
   ([n primes]
-   (let [dfs (into (sorted-set) (filter #(> % 1)) (ep/factorize-sieve n primes))
-         ]
+   (let [dfs (into (sorted-set) (filter #(> % 1)) (factorize-sieve n primes))]
      (*' n (reduce *' (map #(- 1 (/ 1 %)) (seq dfs)))))))
 
 (defn prime? [n] (= (count (divisors n)) 2))
