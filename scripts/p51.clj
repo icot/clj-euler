@@ -21,7 +21,7 @@
 ;
 
 (defn compress [data selectors]
-  (for [ d (map vector (ec/digits data) selectors) :when (not (last d))] (first d)))
+  (ec/seq-to-digits (for [ d (map vector (ec/digits data) selectors) :when (last d)] (first d))))
 
 ;def test(data, selectors):
 ;    l = (d for d, s in zip(data, selectors) if s)
@@ -33,12 +33,13 @@
 ;        return len(set(r)) == 1
 
 (defn stest [data selectors]
-  (for [ d (map vector (ec/digits data) selectors) :when (last d)] (first d)))
+  (for [ d (map vector (ec/digits data) selectors) :when (last d)] d))
 
 (defn selectors [l]
-  (apply cartesian-product (repeat l [false true])))
+    (apply cartesian-product (repeat l [false true])))
 
-(def primes (filter #(> % 50) (ep/sieve 1000)))
+;(def primes (filter #(> % 50000) (ep/sieve 100000)))
+(def primes (filter #(> % 10) (ep/sieve 100)))
 (def dp (zipmap primes (map #(count (str %)) primes)))
 (def pdict (group-map-keys-by-value dp))
 
@@ -68,8 +69,6 @@
                 (apply concat x)
                 (apply merge-with concat x)))
 
-;(prn families)
-
 ;    maxl = 0
 ;    octofam = []
 ;    for k, v in list(families.items()):
@@ -86,3 +85,23 @@
 ;    print((len(octofam), octofam))
 
 (prn "Looking for longest family")
+
+(loop [f families maxl 0 octofam '()]
+  (if (empty? f)
+    (prn "Done:" (map count octofam))
+    (let [item (first f)
+          k (first item)
+          v (last item)
+          selector (last k)
+          buf (sort (for [x (into '() (set v)) :when (stest x selector)] x))
+          new-maxl (if (> (count buf) maxl) (count buf) maxl)]
+      (do
+        (if (> new-maxl maxl)
+          (prn k buf))
+      (if (= 8 (count buf))
+        (recur (rest f) new-maxl (concat octofam (list buf)))
+        (recur (rest f) new-maxl octofam))))))
+
+(prn (map compress (repeat 123) (selectors 3)))
+
+(prn (compress 134 '(true true true false)))
