@@ -60,18 +60,16 @@
 ;                    families[(k,k1,k2)] = [prime]
 
 (prn "Generating families")
-(def families (apply merge-with concat
-                (apply concat
-                       (for [p primes]
+(def families (as-> (for [p primes]
                          (let [k (count (ec/digits p))]
                            (for [s (selectors k)]
-                             (let [k1 (compress p s)
-                                   k2 s]
-                               (hash-map (list k k1 k2) (list p)))))))))
+                             (let [k1 (compress p s) k2 s]
+                               (hash-map (list k k1 k2) (list p)))))) x
+                (apply concat x)
+                (apply merge-with concat x)))
 
-; (prn families)
+;(prn families)
 
-(prn "Looking for longest family")
 ;    maxl = 0
 ;    octofam = []
 ;    for k, v in list(families.items()):
@@ -87,3 +85,4 @@
 ;            octofam.append(buf)
 ;    print((len(octofam), octofam))
 
+(prn "Looking for longest family")
