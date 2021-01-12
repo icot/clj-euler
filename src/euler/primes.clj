@@ -76,10 +76,15 @@
     (factor-helper n 2 '(1)))
   )
 
-; euler.core=> (time (factorize-sieve 112346781234901234))
+; (time (factorize-sieve 112346781234901234))
 ; "Elapsed time: 12245.08063 msecs"
 ; (8024770088207231 7 2 1)
-;
+
+
+;; (time (factorize-sieve 112346781234901234))
+;; "Elapsed time: 5444.272885 msecs"
+;;  => [1 2 7 8024770088207231]
+
 (defn factorize-sieve
   "Returns a list of the integer factors of argument n"
   ([n] (factorize-sieve n (sieve (Math/round (Math/sqrt n)))))
@@ -93,9 +98,9 @@
                   [next-factor & remaining-primes] primes
                   ]
                 (if (or (empty? primes) (= remanent 1))
-                  (if (= remanent 1) factors (cons remanent factors))
+                  (if (= remanent 1) factors (conj factors remanent))
                   (if branch?
-                    (recur next-remanent factor (cons factor factors) primes)
+                    (recur next-remanent factor (conj factors factor) primes)
                     (recur remanent next-factor factors remaining-primes)
                     )
                   )
@@ -103,7 +108,7 @@
               )
                           )
          ]
-     (factor-helper n 2 '(1) primes))))
+     (factor-helper n 2 '[1] primes))))
 
 ; Theorem 273: An Introduction to the Theory un Numbers (G.H Hardy and E.M Wright)
 (defn num-divisors "Returns number of divisors for n"
