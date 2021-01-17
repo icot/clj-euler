@@ -1,0 +1,31 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.p76.3819896372
+  (:use :cl))
+(in-package :ros.script.p76.3819896372)
+
+(defun p_k (n k)
+;  "Restricted partitions of n taken in k ways"
+  (cond
+    ((and (= n 0) (= k 0)) 1)
+    ((or (<= n 0) (<= k 0)) 0)
+    (t (+ (p_k (- n k) k)
+             (p_k (+ n 1) (+ k 1))))))
+
+(defun integer-partition-count (n)
+;  "Total number of integer partitions"
+  (reduce #'+ (mapcar #'(lambda (k) (p_k n k)) (loop for i below (+ n 1) collect i))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (time
+   (print (format t "Total ~a %" (integer-partitions-count 100)))))
+;;; vim: set ft=lisp lisp:
