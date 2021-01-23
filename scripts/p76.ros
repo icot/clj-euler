@@ -12,20 +12,25 @@ exec ros -Q -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.p76.3819896372)
 
+(declaim (optimize (speed 3) (safety 0)))
+
 (defun p_k (n k)
 ;  "Restricted partitions of n taken in k ways"
+  (declare (optimize (speed 3) (safety 0)))
+  (declare (type integer n k))
   (cond
     ((and (= n 0) (= k 0)) 1)
     ((or (<= n 0) (<= k 0)) 0)
     (t (+ (p_k (- n k) k)
-             (p_k (+ n 1) (+ k 1))))))
+          (p_k (- n 1) (- k 1))))))
 
 (defun integer-partition-count (n)
 ;  "Total number of integer partitions"
+  (declare (type integer n))
   (reduce #'+ (mapcar #'(lambda (k) (p_k n k)) (loop for i below (+ n 1) collect i))))
 
 (defun main (&rest argv)
   (declare (ignorable argv))
   (time
-   (print (format t "Total ~a %" (integer-partitions-count 100)))))
+   (print (format t "Total ~a ~%" (integer-partition-count 100)))))
 ;;; vim: set ft=lisp lisp:

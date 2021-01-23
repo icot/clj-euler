@@ -3,7 +3,8 @@
 ; raco pkg install memoize
 (require memoize)
 
-(define/memo (p_k n k)
+;(define/memo (p_k n k)
+(define (p_k n k)
 ;  "Restricted partitions of n taken in k ways"
   (cond
     ((and (zero? n) (zero? k)) 1)

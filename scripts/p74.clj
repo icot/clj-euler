@@ -27,7 +27,7 @@
                      })
 
 (defn factorial-digit-chain [n]
-  (let [f (fn [n ^java.util.Map acc]
+  (let [f (fn [n acc]
             (let [s (reduce + (map factorial-table (ec/digits n)))
                   seen? (get acc s false)]
               (if seen?
@@ -45,6 +45,8 @@
       (recur (inc n) (inc counter))
       (recur (inc n) counter)))))
 
+; NOTE
+
 ; Return Hints
 ; Total: 402"
 ; "Elapsed time: 41735.80012 msecs"
@@ -53,8 +55,9 @@
 ; "Total: 402"
 ; "Elapsed time: 39598.352878 msecs"
 
-; Using factorial without bigint support doesn't affect
-
-; Using (memoize factorial) actually raises running time to 81s
-
-; Using factorial-table -> 35s
+; Some notes from micro-optimizations
+; - Using factorial without bigint support doesn't affect
+; - Using (memoize factorial) actually raises running time to 81s,
+;   I'm assuming I'm not placing the call in the right scope
+; - Using factorial-table -> 35s
+; - Using acc as vector, passing type hint and check with .indexOf -> Unusable...

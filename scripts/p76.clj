@@ -15,10 +15,23 @@
 
 (defn integer-partition-count [n]
   "Total number of integer partitions"
-  (let [f (memoize p_k)]
-    (reduce + (map #(f n %) (range (inc n))))))
+  (let [p_k' (fn [n k]
+               (cond
+                 (and (zero? n) (zero? k)) 1
+                 (or (<= n 0) (<= k 0)) 0
+                 :else (+
+                        (p_k' (dec n) (dec k))
+                        (p_k' (- n k) k)
+                        )))
+        f' (memoize p_k')
+        f (memoize p_k)]
+    (reduce + (for [i (range (inc n))] (f' n i)))))
 
 (newline)
+
+(time
+ (let [p (integer-partition-count 100)]
+   (prn (format "Total %d" p))))
 
 (time
  (let [p (integer-partition-count 100)]
@@ -27,3 +40,6 @@
 ; The actual solution to the problem needs to remove one solution (n)
 
 ; TODO: Recursive solution runs in 20s, maybe convert to a loop for better performance?
+
+; "Total 190569292"
+; "Elapsed time: 37120.021215 msecs"
