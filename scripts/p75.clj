@@ -4,19 +4,24 @@
 ; Using Euclid's formula (https://en.wikipedia.org/wiki/Pythagorean_triple)
 
 (def MAX-PERIMETER 1500000)
-
-(def LIMIT 2000)
+(def LIMIT (int (Math/sqrt MAX-PERIMETER)))
 
 (def perimeters (atom {}))
 
+(newline)
+(prn (format "P: %d Limit: %d" MAX-PERIMETER LIMIT))
+
 (time
-(loop [m 1]
+ (loop [m 2]
   (if (> m LIMIT)
-    (prn (format "Total: %d" (count (filter #(= 1 (last %)) @perimeters))))
-    (let [delta (loop [n 1]
+    (do
+;      (prn perimeters)
+      (prn (format "Total: %d" (count (filter #(= 1 (last %)) @perimeters)))))
+    (do
+      (loop [n 1]
                   (if (= m n)
                     nil
-                    (if (not= (ep/gcd m n) 1)
+                    (if (or (not= (ep/gcd m n) 1) (not= (mod (/ (+ m n) 2) 1)))
                       (recur (inc n))
                       (let [m2 (* m m)
                             n2 (* n n)
@@ -24,11 +29,15 @@
                             b (* 2 m n)
                             c (+ m2 n2)
                             p (+ a b c)
-                            count (get @perimeters p 0)]
+                            ps (for [k (range 1 (inc (quot MAX-PERIMETER p)))] (* p k))]
                         (do
-                          (if (<= p MAX-PERIMETER)
-                            (swap! perimeters assoc p (inc count)))
-                          (recur (inc n)))))))]
-      (recur (inc m)))))
-)
-
+;                          (prn ps @perimeters)
+                          (loop [p' ps]
+                            (if (not (empty? (rest p')))
+                              (do
+                                (swap! perimeters assoc (first p') (inc (get @perimeters (first p') 0)))
+                                (recur (rest p')))))
+                          (recur (inc n)))))))
+      (recur (inc m))))
+  )
+ )
