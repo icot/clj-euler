@@ -7,23 +7,44 @@
   "Computes integer square root of n following Newton's method.
    See https://en.wikipedia.org/wiki/Integer_square_root"
   (loop [x (quot n 2)]
-    (let [x' (quot (+' x (quot n x)) 2)]
-      (if (< (nt/abs  (-' x x')) 1)
+    (let [x' (quot (+' x (quot n x)) 2)
+          d (- x' x)
+          diff (if (neg? d) (- d) d)]
+      (if (< diff 1)
         x'
         (recur x')))))
 
 
+; http://www.afjarvis.staff.shef.ac.uk/maths/jarvisspec02.pdf
+; BUG: Incorrect?
+(defn isqrt-sub ^BigInteger [^BigInteger n ^long prec]
+  (let [limit (bigint (Math/pow 10 (inc prec)))
+        a0 (* 5 n)
+        b0 5]
+    (loop [a a0 b b0]
+      (if (< b limit)
+        (if (>= a b)
+          (recur (- a b) (+ b 10))
+          (recur (* 100 a) (+ 5 (* 100 (/ b 10))))
+          )
+        (quot b 100)))))
+
 (newline)
 
-(def big-two (bigint (* 2 (Math/pow 10 200))))
+(defn bignum [n] (bigint (* n (Math/pow 10 200))))
+(def naturals (range 2 100))
+(def squares (set (for [i (range 1 10)] (* i i))))
 
-; Using libraries
-(time
- (let [s (first (nt/exact-integer-sqrt big-two))]
-  (do
-    (prn (apply + (take 100 (ec/digits s)))))))
+;          (apply + (take 100 (digits (nt/exact-integer-sqrt (bignum s))))))))
 
 (time
- (let [s (isqrt big-two)]
-  (do
-    (prn (apply + (take 100 (ec/digits s)))))))
+ (prn
+  (apply +
+        (for [s naturals :when (not (squares s))]
+          (apply + (take 100 (ec/digits (isqrt (bignum s)))))))))
+
+; BUG: Incorrect answer
+; 40821N
+; "Elapsed time: 33.603206 msecs"
+
+; (prn (isqrt-sub 2 101))
