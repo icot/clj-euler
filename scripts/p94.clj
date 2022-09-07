@@ -1,4 +1,5 @@
-(ns p94)
+(ns p94
+  [:require [euler.primes :as ep]])
 
 ;; Massage Pythagoras until getting to a Pell's equation reflecting the relation between
 ;; the a and b (b => a +- 1)
@@ -20,33 +21,39 @@
 (def D 3)
 
 (def LIMIT 1000000000)
+;(def LIMIT 100)
 
-(defn pell [x y] (- (* x x) (* 3 y y)))
+(println "Factors" (distinct (ep/factorize-sieve 16)))
 
-(defn perimeters [x]
+(defn natural-square? [x]
+  (if (= (count (distinct (ep/factorize-sieve x))) 2)
+    true
+    false))
+
+(defn test-triangle? [^long a ^long b]
+  (natural-square? (- (* a a) (* b b))))
+
+(defn perimeter [^long x]
   (let [a1 (/ (inc (* 2 x)) 3)
-        a2 (/ (dec (* 2 x)) 3)]
-    (do
-      (println)
-      (println ">> Side :" (filter int? (list a1 a2)))
-      (println)
-      (filter int? (list (inc (* 3 a1)) (dec (dec (* 3 a2))))))))
+        a2 (/ (dec (* 2 x)) 3)
+        s (first (filter int? (list a1 a2)))
+        p (inc (* 3 s))]
+    (if (test-triangle? s (/ (inc s) 2))
+      (inc (* 3 s))
+      (dec (* 3 s)))))
 
-(time (loop [xk x1 yk y1 P 6 p '() mp 0]
-        (when (> LIMIT mp)
-          (println "x_k: " xk "y_k: " yk "P:" P "p: " p "mp: " mp)
+(time (loop [xk (long x1) yk (long y1) p (long 0) P (long 0)]
+        (when (> LIMIT p)
+          (println "x_k: " xk "y_k: " yk "P:" P "p: " p)
           (let [xk1 (+ (* x1 xk) (* 3 y1 yk))
                 yk1 (+ (* x1 yk) (* y1 xk))
-                p (perimeters xk1)
-                sp (apply + p)
-                mp (apply min p)]
-            (recur xk1 yk1 (+ P sp) p mp)))))
+                p (perimeter xk1)]
+            (recur xk1 yk1 p (+ P p))))))
            
-;; BUG: Code returns:518408339, Solution is off by 7
-;;      Degenerate triangles (1,1,0) and (1,1,2) add 6 to P if counted, still, off by 1
+;; BUG: The logic for the loop is OK, but the test-triangle? function and logic branch in
+;;      the perimeter function starts to fail mid-way accumulating off-by-one errors
+        
 
-;; Discounting the degenerate triangles the bug must be in the generation of the perimeters from the sizes,
-;; where the wrong sign for the b side is being taken
 
 
 
