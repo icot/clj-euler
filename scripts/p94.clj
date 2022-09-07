@@ -26,7 +26,11 @@
 (defn perimeters [x]
   (let [a1 (/ (inc (* 2 x)) 3)
         a2 (/ (dec (* 2 x)) 3)]
-    (filter int? (list (inc (* 3 a1)) (dec (dec (* 3 a2)))))))
+    (do
+      (println)
+      (println ">> Side :" (filter int? (list a1 a2)))
+      (println)
+      (filter int? (list (inc (* 3 a1)) (dec (dec (* 3 a2))))))))
 
 (time (loop [xk x1 yk y1 P 6 p '() mp 0]
         (when (> LIMIT mp)
@@ -40,4 +44,9 @@
            
 ;; BUG: Code returns:518408339, Solution is off by 7
 ;;      Degenerate triangles (1,1,0) and (1,1,2) add 6 to P if counted, still, off by 1
+
+;; Discounting the degenerate triangles the bug must be in the generation of the perimeters from the sizes,
+;; where the wrong sign for the b side is being taken
+
+
 
