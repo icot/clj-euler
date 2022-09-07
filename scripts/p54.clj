@@ -18,6 +18,7 @@
                          (compare [(get h key2) key2]
                                   [(get h key1) key1])))))
 
+; TODO: Resolve ties taking into account the cards present in special hands
 (defn eval-hand [hand]
   (letfn [(pair? [hand] (= (count (set (map :value hand))) 4))
           (two-pairs? [hand] (and
@@ -42,13 +43,13 @@
 ;      (newline)
 ;      (prn (sort-by :value hand))
       (cond
-        (pair? hand) 1
-        (two-pairs? hand) 10
-        (three-of-a-kind? hand) 100
-        (straight? hand) 1000
-        (flush? hand) 10000
-        (full-house? hand) 100000
-        (royal-flush? hand) 1000000
+        (pair? hand) (* 1 )
+        (two-pairs? hand) (* 10 )
+        (three-of-a-kind? hand) (* 100 )
+        (straight? hand) (* 1000 (apply max (map :value hand)))
+        (flush? hand) (* 10000 )
+        (full-house? hand) (* 100000 )
+        (royal-flush? hand) (* 1000000 (apply max (map :value hand)))
         :else 0))))
 
 (defn compare-hand [h1 h2]
