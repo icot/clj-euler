@@ -7,8 +7,9 @@
     (first (filter (fn [p] (> p pos)) railways))))
 
 (defn next-utility [pos] pos
-  (let [utilities (list 12 28)]
-    (first (filter (fn [p] (> p pos)) utilities))))
+  (if (and (>= pos 12) (<= pos 28))
+    28
+    12))
 
 (defn go-back-3 [pos] (- pos 3))
 
