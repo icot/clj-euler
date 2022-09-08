@@ -27,25 +27,41 @@
   
 (defn roll-dice [] (+ (inc (rand-int 6)) (inc (rand-int 6))))
 
-(def community-chest (atom (shuffle (range 1 17))))
+;(defn roll-dice [] 1)
 
+(def community-chest (atom (shuffle (range 1 17))))
 (def chance-chest (atom (shuffle (range 1 17))))
 
+(defn rotate [coll]
+  (concat (rest coll) (list (first coll))))
+
+(defn send-card-to-bottom [a]
+  (swap! a rotate))
+
 (defn draw-from-community-chest [pos]
-  (let [card (first (community-chest))
-        draw (cc-moves card)]
+  (let [card (first @community-chest)
+        draw (cc-moves card pos)]
     (do
+      (send-card-to-bottom community-chest)
       (if (fn? card)
         (apply card pos)
-        card))))
+        draw))))
 
-(defn draw-from-chance-chest [pos])
+(defn draw-from-chance-chest [pos]
+  (let [card (first @chance-chest)
+        draw (cc-moves card pos)]
+    (do
+      (send-card-to-bottom chance-chest)
+      (if (fn? card)
+        (apply card pos)
+        draw))))
 
 (defn move [pos]
   (let [next-square (mod (+ pos (roll-dice)) 40)]
     (cond
-      (.contains '[2 17 33]) (draw-from-community-chest pos)
-      (.contains '[7 22 36]) (draw-from-chance-chest pos))))
+      (some #(= next-square %) '(2 17 33)) (draw-from-community-chest pos)
+      (some #(= next-square %) '(7 22 36)) (draw-from-chance-chest pos)
+      :else next-square)))
 
 (defn update-stats [stats pos]
   (if (and (stats pos) (not (nil? pos)))
@@ -54,17 +70,17 @@
 
 ;; https://clojuredocs.org/clojure.core/sorted-map-by
 
-(def N 100)
+(def N 1000000)
 
 (defn display-stats [stats]
   (let [sorted-stats (into (sorted-map-by (fn [key1 key2]
                                             (compare [(get stats key2) key2]
                                                      [(get stats key1) key1]))) stats)
-        modal (for [p (take 3 sorted-stats)] (vector (first p) (/ (last p) N)))]
-    (println modal)))
+        modal (for [p (take 3 sorted-stats)] (vector (first p) (* 100 (double (/ (last p) N)))))]
+    (println modal (count sorted-stats))))
  
 (time (loop [n 0 pos 0 stats {}]
-        (if (zero? (mod n 10)) (display-stats stats))
+        (if (zero? (mod n 1000000)) (display-stats stats))
         (when (< n N)
           (let [next-pos (move pos)]
             (recur (inc n) next-pos (update-stats stats pos))))))
