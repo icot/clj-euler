@@ -1,6 +1,8 @@
-(ns p84)
+(ns p84
+  (:require [clojure.set :as cs]))
 
 (def N 1000000)
+
 (def stats (atom {}))
 (def community-chest (atom (shuffle (range 1 17))))
 (def chance-chest (atom (shuffle (range 1 17))))
@@ -45,18 +47,18 @@
 (defn rotate [coll]
   (concat (rest coll) (list (first coll))))
 
-(defn draw-from-community-chest [pos]
+(defn draw-from-community-chest [pos next]
   (let [card (first @community-chest)
-        draw (cc-moves card pos)]
+        draw (cc-moves card next)]
     (do
       (swap! community-chest rotate)
       (if (fn? card)
         (apply card pos)
         draw))))
 
-(defn draw-from-chance-chest [pos]
+(defn draw-from-chance-chest [pos next]
   (let [card (first @chance-chest)
-        draw (cc-moves card pos)]
+        draw (cc-moves card next)]
     (do
       (swap! chance-chest rotate)
       (if (fn? card)
@@ -72,8 +74,8 @@
                         (swap! streak (fn [n] (* n 0))) ; Reset streak
                         10) ; And go to Jail
         (= next-square 30) 10; G2J
-        (some #(= next-square %) '(2 17 33)) (draw-from-community-chest pos)
-        (some #(= next-square %) '(7 22 36)) (draw-from-chance-chest pos)
+        (some #(= next-square %) '(2 17 33)) (draw-from-community-chest pos next-square)
+        (some #(= next-square %) '(7 22 36)) (draw-from-chance-chest pos next-square)
         :else next-square))))
 
 (defn update-stats [stats pos]
@@ -87,9 +89,10 @@
   (let [sorted-stats (into (sorted-map-by (fn [key1 key2]
                                             (compare [(get @stats key2) key2]
                                                      [(get @stats key1) key1]))) @stats)
-        modal (for [p (take 3 sorted-stats)] (vector (first p) (* 100 (double (/ (last p) N)))))]
+        modal (for [p (take 40 sorted-stats)] (vector (first p) (* 100 (double (/ (last p) N)))))]
     (println modal (count sorted-stats))))
- 
+
+(println ">>>>>>>>>") 
 (time (loop [n 0 pos 0]
 ;        (display-stats stats)
 ;        (println @streak)
@@ -99,8 +102,11 @@
 
 (display-stats stats)
 
-(println "G2J :" (@stats 30)) ;; Should be nil
+;; Debug/Asserts
+(println)
+(println "G2J :" (@stats 30))
+(println "Missing Keys: ")
+(println (into (sorted-set) (cs/difference (set (range 40)) (set (keys @stats)))))
 
-;; TODO
-;; -> G2J
+
             
