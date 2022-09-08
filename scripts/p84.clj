@@ -3,15 +3,19 @@
 
 
 (defn next-railway [pos]
-  (let [railways (list 5 15 25 35)]
-    (first (filter (fn [p] (> p pos)) railways))))
-
+  (cond
+    (and (>= pos 0) (< pos 5)) 5
+    (and (>= pos 5) (< pos 15)) 15
+    (and (>= pos 15) (< pos 25)) 25
+    (and (>= pos 25) (< pos 35)) 35
+    :else 5))
+    
 (defn next-utility [pos] pos
   (if (and (>= pos 12) (<= pos 28))
     28
     12))
 
-(defn go-back-3 [pos] (- pos 3))
+(defn go-back-3 [pos] (mod (+ 40 pos -3) 40))
 
 (def cc-moves {1 0, 2 10})
 
