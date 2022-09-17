@@ -1,7 +1,11 @@
 (ns p81
   (:require [clojure.string :as str]))
 
-(defn loadfile [filename] nil)
+;; Load file as list of integers
+
+(def N 80)
+
+(def data (map #(Integer/parseInt %) (str/split (slurp "scripts/resources/p081_matrix.txt") #",")))
 
 (defrecord NodeType1 [left right])
 (defrecord NodeTYpe2 [left right down])
@@ -14,4 +18,6 @@
 (defn a* [graph start end] nil)
 
 (defn dikjstra [graph start] nil)
+
+
 
