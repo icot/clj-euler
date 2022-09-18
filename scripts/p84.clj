@@ -15,7 +15,7 @@
                    5 39, ; H2
                    6 5,  ; R1
                    7 50,
-                   8 60,
+                   8 50,
                    9 70,
                    10 80})
 
@@ -27,11 +27,15 @@
   (let [ nu {7 12, 22 28, 36 12}]
     (nu pos)))
 
-(defn go-back-3 [pos] (mod (+ 40 pos -3) 40))
+(defn go-back-3 [pos]
+  "If we are in CC3, G2J directly after backing 3 positions"
+  (if (= pos 33)
+    10; G2J 
+    (mod (- pos 3) 40)))
   
 (defn roll-dice []
-  (let [d1 (inc (rand-int 4))
-        d2 (inc (rand-int 4))]
+  (let [d1 (inc (rand-int 6))
+        d2 (inc (rand-int 6))]
     (do
       (if (= d1 d2)
         (swap! streak inc)
@@ -42,39 +46,37 @@
   (concat (rest coll) (list (first coll))))
 
 (defn draw-from-community-chest [next]
-  (let [card (first @community-chest)
+  (let [card (inc (rand-int 16))
         draw (cc-moves card next)]
     (do
-      (swap! community-chest rotate)
       draw)))
 
 (defn draw-from-chance-chest [next]
-  (let [card (first @chance-chest)
+  (let [card (inc (rand-int 16))
         draw (chance-moves card next)]
     (do
-      (swap! chance-chest rotate)
       (cond
-        (or (= draw 50) (= draw 60)) (next-railway next)
-        (= draw 70) (next-utility next)
-        (= draw 80) (go-back-3 next)
-        :else next))))
+       (= draw 50) (next-railway next)
+       (= draw 70) (next-utility next)
+       (= draw 80) (go-back-3 next)
+       :else next))))
 
 (defn update-stats [stats pos]
-  (if (and (@stats pos) (not (nil? pos)))
-    (let [v (@stats pos)]
-      (swap! stats assoc pos (inc v)))
-    (swap! stats assoc pos 1)))
-
+  "Keep count of visited positions"
+  (let [v (or (@stats pos) 1)]
+    (swap! stats assoc pos (inc v))))
+  
 (defn move [pos streak]
-  (let [next-square (mod (+ pos (roll-dice)) 40)]
+  "Move starting from 'pos'"
+  (let [next-square (mod (+ pos (roll-dice)) 40)] ; Next position 
     (do
-      (update-stats stats pos)
+      (update-stats stats pos) ; Compute statis for 'pos'
       (cond
-        (compare-and-set! streak 3 0) 10
         (= next-square 30) 10; G2J
-        (some #(= next-square %) '(2 17 33)) (draw-from-community-chest next-square)
+        (compare-and-set! streak 3 0) 10 ; G2J if 3 doubles in a row
         (some #(= next-square %) '(7 22 36)) (draw-from-chance-chest next-square)
-        :else next-square))))
+        (some #(= next-square %) '(2 17 33)) (draw-from-community-chest next-square)
+        :else next-square)))) 
 
 
 ;; https://clojuredocs.org/clojure.core/sorted-map-by
@@ -84,7 +86,7 @@
                               (compare [(get @stats key2) key2]
                                        [(get @stats key1) key1]))) @stats)
         modal (for [p (take 40 sorted-stats)]
-                (vector (first p) (/ (last p) N)))]
+                (vector (first p) (* 100 (double (/ (last p) N)))))]
     (doseq [item  modal]
       (println item))))
 
