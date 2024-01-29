@@ -13,7 +13,8 @@
                  [org.clojure/core.async "1.3.610"]
                  [com.clojure-goes-fast/clj-async-profiler "0.5.0"] ; FlameGraphs
                  [org.clojure/java.jdbc "0.7.11"]
-                 [org.xerial/sqlite-jdbc "3.34.0"]]
+                 [org.xerial/sqlite-jdbc "3.34.0"]
+                 [ubergraph "0.8.2"]]
                  
   ;; deploy-repositories setup to do `lein deploy clojars` on `lein deploy`
   :deploy-repositories [["releases" :clojars]

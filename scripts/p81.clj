@@ -1,23 +1,24 @@
 (ns p81
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:require [ubergraph.core :as uber]))
 
 ;; Load file as list of integers
 
 (def N 80)
 
-(def data (map #(Integer/parseInt %) (str/split (slurp "scripts/resources/p081_matrix.txt") #",")))
+(def lines (-> (slurp "scripts/resources/p081_matrix.txt")
+               (str/split #"\n")))
 
-(defrecord NodeType1 [left right])
-(defrecord NodeTYpe2 [left right down])
-(defrecord NodeType3 [left right down up])
-
-;; Load Node List into Graph representation
-;; Grahp -> { :n1 (NodeTypeX [n2 ...] }} 
+(def cells (map #(Integer/parseInt %)
+                (-> (map #(str/split % #",") lines)
+                    (flatten))))
 
 
-(defn a* [graph start end] nil)
 
-(defn dikjstra [graph start] nil)
 
+(def graph1
+  (uber/graph [:a :b] [:a :c] [:b :d]))
+
+(uber/pprint graph1)
 
 
