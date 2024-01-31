@@ -40,9 +40,11 @@
   (letfn [(divisors-helper [acc n i max]
             (if (> i max) acc
                 (if (zero? (mod n i))
-                  (recur (cons i acc) n (inc i) max)
+                  (recur (conj acc i) n (inc i) max)
                   (recur acc n (inc i) max))))]
-      (divisors-helper '() n 1 (Math/round (Math/floor (/ n 2))))))
+    (let [seeds (divisors-helper '[] n 1 (Math/round (Math/sqrt n)))]
+      (concat seeds (for [s seeds :when (> s 1)] (/ n s))))))
+
 
 (defn divisors
   "Returns a list of all integer divisors of n"
