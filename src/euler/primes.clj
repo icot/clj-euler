@@ -1,4 +1,5 @@
-(ns euler.primes)
+(ns euler.primes
+  (:require [clojure.math.numeric-tower :as np])) ;; warning, as it replaces abs()
 
 (use 'euler.core)
 
@@ -34,16 +35,19 @@
                     (recur (+ i p p))))))
             (recur  (+ p 2))))))))
 
+;; BUG bug in sqrt root boundary check for perfect squares (last factor added twice)
 (defn proper-divisors
-  "Returns a list of the proper (< n) integer divisors of n"
+  "Returns a vector of the proper (< n) integer divisors of n"
   [n]
   (letfn [(divisors-helper [acc n i max]
             (if (> i max) acc
                 (if (zero? (mod n i))
                   (recur (conj acc i) n (inc i) max)
                   (recur acc n (inc i) max))))]
-    (let [seeds (divisors-helper '[] n 1 (Math/round (Math/sqrt n)))]
-      (concat seeds (for [s seeds :when (> s 1)] (/ n s))))))
+    (let [[r s] (np/exact-integer-sqrt n)
+          seeds (divisors-helper '[] n 1 r)]
+      (if (zero? s) seeds
+        (apply vector (concat seeds (for [s seeds :when (> s 1)] (/ n s))))))))
 
 
 (defn divisors
